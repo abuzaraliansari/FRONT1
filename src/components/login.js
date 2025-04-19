@@ -55,7 +55,7 @@ const Login = () => {
       <Header />
       <div className="login-wrapper">
         <div className="image-box">
-          <img src={`${process.env.PUBLIC_URL}/Images/BabralaBHNA.jpg`} alt="" />
+          <img src={`${process.env.PUBLIC_URL}/Images/about_bann.png`} alt="" />
         </div>
         <div className="login-container">
           <div className="login-box">

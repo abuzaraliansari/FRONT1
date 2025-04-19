@@ -75,15 +75,7 @@ code {
   gap: 5px;
 }
 
-.nav-btn logout-btn {
-  background-color: #dc3545;
-  color: black;
-  border: none;
-  border-radius: 50%;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-}
+
 
 /* Login Wrapper and Image Box */
 .login-wrapper {
@@ -95,8 +87,8 @@ code {
 }
 
 .image-box {
-  width: 80%; /* Increase width */
-  height: 90vh; /* Reduce height */    
+  width: 50%; /* Increase width */
+  height: 80vh; /* Reduce height */    
   border-radius: 10px;
   display: flex;
   flex-direction: column;                               
@@ -841,14 +833,7 @@ body {
 }
 
 /* Footer styles */
-.footer {
-  margin-top: auto; /* Push the footer to the bottom */
-  background-color: white;
-  color: white;
-  text-align: center;
-  padding: 20px;
-  width: 100%;
-}
+
 
 
 /* Homepage */
@@ -925,13 +910,6 @@ body {
   transform: scale(1.03);
 }
 
-.logout-btn {
-  background: #d63031;
-}
-
-.logout-btn:hover {
-  background: #c0392b;
-}
 
 .home-page h1 {
   font-size: clamp(1.5rem, 6vw, 2rem);
@@ -1279,53 +1257,61 @@ h1 {
   background-color: white;
   color: white;
   text-align: center;
-  padding: 0px 20px;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
+  
+}
+
+.footer2{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  margin: 0px;
+  padding: 2rem;
+}
+
+
+
+.footer2-2{
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  margin: 0px;
+  padding: 0.625rem;
+
 }
 
 /* Styling for govt_logo_slick-slider to display elements in a row */
+/* Styling for govt_logo_slick-slider to display elements in a row */
 .govt_logo_slick-slider {
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
+  justify-content: space-between; /* Space between images */
   align-items: center;
-  overflow-x: hidden;
-  padding: 10px 0;
-  gap: 15px;
-  width: 90%;
-  margin-left: 50px;
-  position: relative;
-  scroll-behavior: smooth;
+  flex-wrap: wrap; /* Wrap images to the next line if needed */
+  padding: 20px 0;
+  gap: 20px; /* Add spacing between images */
 }
 
-.govt_logo_slick-slider .element {
-  flex: 0 0 auto;
-  text-align: center;
-}
-
-.govt_logo_slick-slider img {
-  width: 150px;
+.govt_logo_slick-slider .element img {
+  width: 150px; /* Adjust image size */
   height: auto;
   transition: transform 0.3s ease;
 }
 
-.govt_logo_slick-slider img:hover {
-  transform: scale(1.1);
-}
-
-/* Add horizontal scrollbar styling (optional) */
-.govt_logo_slick-slider::-webkit-scrollbar {
-  height: 8px;
-}
-
-.govt_logo_slick-slider::-webkit-scrollbar-thumb {
-  background-color: #a6aac1;
-  border-radius: 4px;
-}
-
-.govt_logo_slick-slider::-webkit-scrollbar-track {
-  background-color: #f1f1f1;
+.govt_logo_slick-slider .element img:hover {
+  transform: scale(1.1); /* Slight zoom effect on hover */
 }
 
 /* Scroll buttons */
@@ -1356,9 +1342,7 @@ h1 {
 }
 
 /* Footer section styling */
-.footer_sect {
-  padding: 10px ;
-}
+
 
 .footer_sect .footer_ul {
   list-style: none;
@@ -1400,8 +1384,8 @@ h1 {
 }
 
 .dis_flx_soc a img {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
 }
 
 /* Scroll-to-top button */
@@ -1498,7 +1482,8 @@ h1 {
 
 .Social-sites{
   display: flex;
-  gap: 10px;
+  gap: 15px;
+  margin-right: 20px;
 }
 
 /* Navbar styles */
@@ -1539,7 +1524,7 @@ h1 {
   background-color: #912C1F;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  padding: 0px 45px 30px 40px;
+  padding: 20px;
 }
 
 /* Burger Button */
@@ -1569,7 +1554,7 @@ h1 {
 /* Navbar buttons */
 .nav-btn {
   padding: 0.5rem 1rem;
-  background-color: #007bff;
+  background-color: #912C1F;
   color: white;
   border: none;
   border-radius: 5px;
@@ -1578,8 +1563,9 @@ h1 {
   transition: background-color 0.3s ease;
 }
 
+
 .nav-btn:hover {
-  background-color: #0056b3;
+  background-color: #912C1F;
 }
 
 .logout-btn {
@@ -1590,11 +1576,11 @@ h1 {
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.3s ease;
-  background-color: #dc3545;
+  background-color: #912C1F;
 }
 
 .logout-btn:hover {
-  background-color: #a71d2a;
+  background-color: #641b12;
 }
 
 /* Media Queries */
@@ -1667,13 +1653,7 @@ h1 {
   }
 }
 
-.logout-btn { 
-  background-color: #dc3545;
-}
 
-.logout-btn:hover {
-  background-color: #a71d2a;
-}
 
 /* Media Queries */
 @media (max-width: 768px) { /* Tablet */
@@ -1748,6 +1728,8 @@ h1 {
 /* Navbar Styles */
 .navbar {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   justify-content: flex-start;
   gap: 15px;
   padding: 10px;
@@ -1764,7 +1746,7 @@ h1 {
 }
 
 .nav-btn:hover {
-  background-color: #0056b3;
+  background-color: #5a1c13;
   border-radius: 5px;
 }
 
@@ -1795,13 +1777,13 @@ h1 {
   width: 100%;
   color: white;
   cursor: pointer;
-  background-color: #0056b3;
+  background-color: #912C1F;
 }
 
 .dropdown-content .dropdown-item:hover {
   background-color: #f1f1f1;
   color: white;
-  background-color: #061424
+  background-color: #5a170f
 }
 
 .dropdown:hover .dropdown-content {
