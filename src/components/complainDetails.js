@@ -10,15 +10,17 @@ const ComplainDetails = () => {
   const navigate = useNavigate();
   const [complaints, setComplaints] = useState([]);
   const today = new Date();
-  const defaultStartDate =
+  
+  const defaultEndDate =
+    new Date(today.setDate(today.getDate() + 1)).toISOString().split("T")[0] +
+    "T04:12:19.180Z";
+    const defaultStartDate =
     new Date(today.setDate(today.getDate() - 30)).toISOString().split("T")[0] +
     "T04:12:19.180Z";
-  const defaultEndDate =
-    new Date().toISOString().split("T")[0] + "T04:12:19.180Z";
   const [startDate, setStartDate] = useState(defaultStartDate);
   const [endDate, setEndDate] = useState(defaultEndDate);
   const [selectedType, setSelectedType] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("Open");
+  const [selectedStatus, setSelectedStatus] = useState("All");
   const [filterMobileNumber, setFilterMobileNumber] = useState("");
   const [limit, setLimit] = useState(3); // Default limit
   const [page, setPage] = useState(1);
@@ -50,8 +52,7 @@ const ComplainDetails = () => {
           startDate,
           endDate,
           complaintType: selectedType,
-          complaintStatus: selectedStatus,
-          complaintID: "",
+          complaintStatus: selectedStatus === "All" ? null : selectedStatus, 
           limit: limit * pageNum,
         };
 
@@ -149,6 +150,7 @@ const ComplainDetails = () => {
     <div>
       <Header />
       <Navbar />
+      
       <div className="complaints-list">
         <h2>Complaint Details</h2>
         <div className="filters-row">
@@ -206,6 +208,11 @@ const ComplainDetails = () => {
               placeholder="Enter Mobile No."
               className="text-input"
             />
+            
+          </div>
+
+          <div>
+            <label className="text-label">
             <button
               className="search-button"
               onClick={handleSearch}
@@ -213,7 +220,8 @@ const ComplainDetails = () => {
             >
               {loading ? "Searching..." : "Search"}
             </button>
-          </div>
+            </label>
+            </div>
         </div>
 
         <div className="complaint-card-container">
@@ -266,40 +274,51 @@ const ComplainDetails = () => {
         </div>
 
         <div className="pagination-controls">
-          <div className="pagination-buttons">
-            <button
-              className="previous-button"
-              onClick={handlePreviousPage}
-              disabled={loading || page === 1}
-            >
-              Previous Page
-            </button>
-            <div className="page-numbers">
-              <p>Page: <strong>{page}</strong></p>
-            </div>
-            <select
-              value={limit}
-              onChange={(e) => handleLimitChange(parseInt(e.target.value))}
-              className="limit-dropdown"
-            >
-              {[3, 5, 10, 15, 20, 100].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-            <button
-              className="next-button"
-              onClick={handleNextPage}
-              disabled={loading || !hasMoreComplaints}
-            >
-              Next Page
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="pagination-buttons">
+      {/* Previous Page Button */}
+      {/* <button
+        className="previous-button"
+        onClick={handlePreviousPage}
+        disabled={loading || page === 1}
+      >
+        Previous Page
+      </button> */}
+
+      
+
+      
+
+      {/* Next Page Button */}
+      <button
+        className="more-button"
+        onClick={handleNextPage}
+        disabled={loading || !hasMoreComplaints}
+      >
+        Load More
+      </button>
+    </div>
+    
+  </div>
+  <div className="set-limit">
+  {/* Label for Set Limit */}
+  <label className="set-limit-label">Set Limit:</label>
+  
+  {/* Limit Dropdown */}
+  <select
+    value={limit}
+    onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+    className="limit-dropdown"
+  >
+    {[3, 5, 10, 15, 20, 100].map((value) => (
+      <option key={value} value={value}>
+        {value}
+      </option>
+    ))}
+  </select>
+</div>
       <Footer />
     </div>
+  </div>
   );
 };
 

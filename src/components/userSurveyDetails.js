@@ -99,7 +99,9 @@ const UsersList = () => {
   };
 
   const handleEdit = (mobileNumber) => {
-    navigate(`/edit-user/${mobileNumber}`);
+    navigate('/SurveyData', {
+      state: { mobileNumber },
+    });
   };
 
   return (
@@ -180,29 +182,13 @@ const UsersList = () => {
 
         {/* Pagination Controls */}
         <div className="pagination-buttons">
-          <button
+          {/* <button
             className="previous-button"
             onClick={handlePreviousPage}
             disabled={loading || page === 1}
           >
             Previous Page
-          </button>
-
-          
-
-          {/* Limit Buttons */}
-          <div className="limit-buttons">
-            {[3, 5, 10, 15, 20, 100].map((value) => (
-              <button
-                key={value}
-                className={`limit-button ${limit === value ? 'active' : ''}`}
-                onClick={() => handleLimitChange(value)}
-                disabled={loading}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
+          </button> */}
 
           {!loading && hasMore && (
             <button
@@ -214,6 +200,24 @@ const UsersList = () => {
             </button>
           )}
         </div>
+
+        <div className="set-limit">
+  {/* Label for Set Limit */}
+  <label className="set-limit-label">Set Limit:</label>
+  
+  {/* Limit Dropdown */}
+  <select
+    value={limit}
+    onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+    className="limit-dropdown"
+  >
+    {[3, 5, 10, 15, 20, 100].map((value) => (
+      <option key={value} value={value}>
+        {value}
+      </option>
+    ))}
+  </select>
+</div>
       </div>
       <Footer />
     </div>

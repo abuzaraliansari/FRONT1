@@ -1,6 +1,8 @@
 import React, { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "../App.css";
 
 export const Header = () => {
@@ -51,6 +53,106 @@ export const Header = () => {
         ) : null}
       </div>
     </div>
+  );
+};
+
+
+export const Banner = () => {
+  useEffect(() => {
+    const carouselElement = document.querySelector("#demo");
+    if (carouselElement && window.bootstrap && window.bootstrap.Carousel) {
+      new window.bootstrap.Carousel(carouselElement, {
+        interval: 3000, // Slide every 3 seconds
+        ride: "carousel", // Auto-slide
+        pause: "hover", // Pause on hover
+        wrap: true, // Loop slides
+      });
+    } else {
+      console.error("Bootstrap Carousel is not initialized. Ensure Bootstrap JS is loaded.");
+    }
+  }, []);
+
+  return (
+    <section className="banners">
+      <div className="container-fluid">
+        <div className="row">
+          <div className="col-12 p-0">
+            <div className="position-relative">
+              <div id="demo" className="carousel slide" data-bs-ride="carousel">
+                {/* Carousel Indicators */}
+                <div className="carousel-indicators">
+                  {[...Array(6)].map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      data-bs-target="#demo"
+                      data-bs-slide-to={index}
+                      className={index === 0 ? "active" : ""}
+                      aria-current={index === 0 ? "true" : "false"}
+                      aria-label={`Slide ${index + 1}`}
+                    ></button>
+                  ))}
+                </div>
+
+                {/* Carousel Inner */}
+                <div className="carousel-inner">
+                  {[
+                    { src: "Slider1.jpg", alt: "Slide 1" },
+                    { src: "Slider2.jpg", alt: "Slide 2" },
+                    { src: "banner_1.jpg", alt: "Slide 3" },
+                    { src: "banner_4.jpg", alt: "Slide 4" },
+                    { src: "banner_3.jpg", alt: "Slide 5" },
+                    { src: "banner_2.jpg", alt: "Slide 6" },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className={`carousel-item ${index === 0 ? "active" : ""}`}
+                    >
+                      <div className="row bg-light">
+                        <div className="col-12 d-flex justify-content-center">
+                          <img
+                            src={`${process.env.PUBLIC_URL}/Images/${item.src}`}
+                            alt={item.alt}
+                            className="d-block w-100 img-fluid"
+                            loading={index > 1 ? "lazy" : "eager"}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Left and Right Controls */}
+                <button
+                  className="carousel-control-prev"
+                  type="button"
+                  data-bs-target="#demo"
+                  data-bs-slide="prev"
+                  aria-label="Previous Slide"
+                >
+                  <span
+                    className="carousel-control-prev-icon"
+                    aria-hidden="true"
+                  ></span>
+                </button>
+                <button
+                  className="carousel-control-next"
+                  type="button"
+                  data-bs-target="#demo"
+                  data-bs-slide="next"
+                  aria-label="Next Slide"
+                >
+                  <span
+                    className="carousel-control-next-icon"
+                    aria-hidden="true"
+                  ></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

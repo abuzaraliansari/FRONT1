@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import '../App.css';
-import { Header, Footer } from './HeaderFooter'; // Import Header and Footer from HeaderFooter.js
+import { Header, Footer, Banner } from './HeaderFooter'; // Import Header and Footer from HeaderFooter.js
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -53,6 +53,7 @@ const Login = () => {
   return (
     <div>
       <Header />
+      <Banner />
       <div className="login-wrapper">
         <div className="image-box">
           <img src={`${process.env.PUBLIC_URL}/Images/about_bann.png`} alt="" />
