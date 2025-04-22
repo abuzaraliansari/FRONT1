@@ -11,8 +11,7 @@ const UsersList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5); // State for limit
-  const [tempLimit, setTempLimit] = useState(5); // Temporary limit for user input
+  const [limit, setLimit] = useState(5); // Default limit
   const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
 
@@ -66,7 +65,7 @@ const UsersList = () => {
         setLoading(false);
       }
     },
-    []
+    [limit]
   );
 
   useEffect(() => {
@@ -82,25 +81,25 @@ const UsersList = () => {
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchUsers(nextPage, false, searchQuery, users, tempLimit); // Use tempLimit here
+    fetchUsers(nextPage, false, searchQuery, users, limit);
   };
 
   const handlePreviousPage = () => {
     if (page > 1) {
       const previousPage = page - 1;
       setPage(previousPage);
-      fetchUsers(previousPage, true, searchQuery, [], tempLimit); // Fetch users for the previous page
+      fetchUsers(previousPage, true, searchQuery, [], limit);
     }
   };
 
-  const handleEdit = (mobileNumber) => {
-    navigate('/SurveyData', {
-      state: { mobileNumber },
-    });
+  const handleLimitChange = (newLimit) => {
+    setLimit(newLimit); // Update the limit
+    setPage(1); // Reset to the first page
+    fetchUsers(1, true, searchQuery, [], newLimit); // Fetch users with the new limit
   };
 
-  const handleLimitChange = (newLimit) => {
-    setTempLimit(newLimit); // Update the temporary limit
+  const handleEdit = (mobileNumber) => {
+    navigate(`/edit-user/${mobileNumber}`);
   };
 
   return (
@@ -126,8 +125,6 @@ const UsersList = () => {
             </button>
           </form>
         </div>
-
-        
 
         {/* Status */}
         {loading && <div className="loading">Loading users...</div>}
@@ -182,48 +179,42 @@ const UsersList = () => {
         )}
 
         {/* Pagination Controls */}
-        
+        <div className="pagination-buttons">
+          <button
+            className="previous-button"
+            onClick={handlePreviousPage}
+            disabled={loading || page === 1}
+          >
+            Previous Page
+          </button>
+
           
 
-          <div className="pagination-buttons">
-            <button
-              className="previous-button"
-              onClick={() => handlePreviousPage()}
-              disabled={loading || page === 1}
-            >
-              Previous Page
-            </button>
-
-                <p>
-                Page: <strong>{page}</strong>
-              </p>
-
-              {/* Limit Section */}
-            <div className="limit-section">
-              <label htmlFor="limit-input">Set Limit:</label>
-              <input
-                id="limit-input"
-                type="number"
-                value={tempLimit}
-                onChange={(e) => handleLimitChange(Number(e.target.value))}
-                className="limit-input"
-                min="1"
+          {/* Limit Buttons */}
+          <div className="limit-buttons">
+            {[3, 5, 10, 15, 20, 100].map((value) => (
+              <button
+                key={value}
+                className={`limit-button ${limit === value ? 'active' : ''}`}
+                onClick={() => handleLimitChange(value)}
                 disabled={loading}
-              />
-            </div>
-
-                {!loading && hasMore && (
-                  <button
-                    className="more-button"
-                    onClick={handleLoadMore}
-                    disabled={loading}
-                  >
-                    Load More
-                  </button>
-                )}
-              </div>
+              >
+                {value}
+              </button>
+            ))}
           </div>
-        
+
+          {!loading && hasMore && (
+            <button
+              className="more-button"
+              onClick={handleLoadMore}
+              disabled={loading}
+            >
+              Load More
+            </button>
+          )}
+        </div>
+      </div>
       <Footer />
     </div>
   );

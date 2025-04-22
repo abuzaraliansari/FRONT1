@@ -20,8 +20,7 @@ const ComplainDetails = () => {
   const [selectedType, setSelectedType] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("Open");
   const [filterMobileNumber, setFilterMobileNumber] = useState("");
-  const [limit, setLimit] = useState(3);
-  const [tempLimit, setTempLimit] = useState(3);
+  const [limit, setLimit] = useState(3); // Default limit
   const [page, setPage] = useState(1);
   const [hasMoreComplaints, setHasMoreComplaints] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -38,7 +37,6 @@ const ComplainDetails = () => {
 
   const fetchComplaints = useCallback(
     async (pageNum, reset = false) => {
-      console.log("fetchComplaints called, page:", pageNum, "reset:", reset);
       setLoading(true);
       setError("");
       const controller = new AbortController();
@@ -86,10 +84,10 @@ const ComplainDetails = () => {
         if (reset) {
           setComplaints(sortedComplaints);
         } else {
-          setComplaints((prevComplaints) => {
-            const newComplaints = sortedComplaints.slice(prevComplaints.length);
-            return [...prevComplaints, ...newComplaints];
-          });
+          setComplaints((prevComplaints) => [
+            ...prevComplaints,
+            ...sortedComplaints.slice(prevComplaints.length),
+          ]);
         }
 
         setHasMoreComplaints(sortedComplaints.length === limit * pageNum);
@@ -118,70 +116,10 @@ const ComplainDetails = () => {
   );
 
   useEffect(() => {
-    const controller = new AbortController();
-    const initialFetch = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const requestBody = {
-          mobileNumber: authData.user.isAdmin ? "" : authData.user.mobileNumber,
-          createdBy: authData.user.username,
-          isAdmin: authData.user.isAdmin || false,
-          startDate: defaultStartDate,
-          endDate: defaultEndDate,
-          complaintType: "",
-          complaintStatus: "Open",
-          complaintID: "",
-          limit,
-        };
-
-        const response = await fetch(
-          "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/complainlimit",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authData.token}`,
-            },
-            body: JSON.stringify(requestBody),
-            signal: controller.signal,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`API Error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error("Unexpected API response format");
-        }
-
-        const sortedComplaints = data.sort(
-          (a, b) => new Date(a.CreatedDate) - new Date(b.CreatedDate)
-        );
-
-        setComplaints(sortedComplaints);
-        setHasMoreComplaints(sortedComplaints.length === limit);
-      } catch (error) {
-        if (error.name === "AbortError") {
-          console.log("Initial fetch aborted");
-          return;
-        }
-        console.error("Error fetching initial complaints:", error);
-        setError(`Failed to fetch complaints: ${error.message}`);
-        setHasMoreComplaints(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initialFetch();
-    return () => controller.abort();
-  }, [authData, defaultStartDate, defaultEndDate, limit]);
+    fetchComplaints(1, true);
+  }, [fetchComplaints]);
 
   const handleSearch = useCallback(() => {
-    console.log("Search button clicked");
     setComplaints([]);
     setPage(1);
     fetchComplaints(1, true);
@@ -195,20 +133,16 @@ const ComplainDetails = () => {
     }
   };
 
-  const handleLimitChange = (newLimit) => {
-    if (newLimit >= 1) {
-      setTempLimit(newLimit);
-      setLimit(newLimit);
-      setComplaints([]);
-      setPage(1);
-      fetchComplaints(1, true);
-    }
-  };
-
-  const handleLoadMore = () => {
+  const handleNextPage = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchComplaints(nextPage, false);
+    fetchComplaints(nextPage, false); // Load more instead of resetting
+  };
+
+  const handleLimitChange = (newLimit) => {
+    setLimit(newLimit);
+    setPage(1);
+    fetchComplaints(1, true);
   };
 
   return (
@@ -340,30 +274,27 @@ const ComplainDetails = () => {
             >
               Previous Page
             </button>
-            <p>
-              Page: <strong>{page}</strong>
-            </p>
-            <div className="limit-section">
-              <label htmlFor="limit-input">Set Limit:</label>
-              <input
-                id="limit-input"
-                type="number"
-                value={tempLimit}
-                onChange={(e) => handleLimitChange(Number(e.target.value))}
-                className="limit-input"
-                min="1"
-                disabled={loading}
-              />
+            <div className="page-numbers">
+              <p>Page: <strong>{page}</strong></p>
             </div>
-            {!loading && hasMoreComplaints && (
-              <button
-                className="more-button"
-                onClick={handleLoadMore}
-                disabled={loading}
-              >
-                Load More
-              </button>
-            )}
+            <select
+              value={limit}
+              onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+              className="limit-dropdown"
+            >
+              {[3, 5, 10, 15, 20, 100].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            <button
+              className="next-button"
+              onClick={handleNextPage}
+              disabled={loading || !hasMoreComplaints}
+            >
+              Next Page
+            </button>
           </div>
         </div>
       </div>
