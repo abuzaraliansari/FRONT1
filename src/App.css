@@ -353,6 +353,9 @@ code {
 }
 
 .complaint-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
   border: 1px solid #ccc;
   padding: 15px;
   border-radius: 10px;
@@ -835,7 +838,7 @@ code {
 
 /* Buttons */
 .submit-btn {
-  background-color: #007bff; /* Primary blue color */
+  background-color: #912C1F; /* Primary blue color */
   color: white;
   border: none;
   border-radius: 8px; /* Larger border radius for modern look */
@@ -849,7 +852,7 @@ code {
 }
 
 .submit-btn:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+  background-color: #5f1910; /* Darker blue on hover */
   transform: scale(1.05); /* Slight zoom effect */
 }
 
@@ -1249,7 +1252,7 @@ h1 {
 
 .search-button, .reset-btn {
   padding: 0.5rem 1rem;
-  background: #007bff;
+  background: #ac483b;
   color: white;
   border: none;
   border-radius: 4px;
@@ -1262,11 +1265,11 @@ h1 {
 
 .search-button:hover, .reset-btn:hover {
   opacity: 0.9;
-  background: #1766bb;
+  background: #631c12;
 }
 
 .edit-button{
-  background: #007bff;
+  background: #912C1F;
   color: white;
   padding: 0.5rem 1rem;
   border: none;
@@ -1275,7 +1278,7 @@ h1 {
 }
 
 .edit-button:hover{
-  background: #15569b;
+  background: #681d13;
   color: white;
   padding: 0.5rem 1rem;
   border: none;
@@ -1360,7 +1363,7 @@ h1 {
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-right: 10vw;
+  margin-right: 5vw;
   margin-bottom: 2rem;
 }
 

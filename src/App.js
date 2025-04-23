@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import WebsiteFirstPage from './components/WebsiteFirstPage';
 import Login from './components/login';
 import Homepage from './components/home';
 import ComplainSubmit from './components/complainSubmit';
@@ -20,7 +19,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/WebsiteFirstPage" element={<WebsiteFirstPage />} />
+        
           <Route path="/Home" element={<Homepage />} />
           <Route path="/ComplainSubmit" element={<ComplainSubmit />} />
           <Route path="/ComplainDetails" element={<ComplainDetails />} />

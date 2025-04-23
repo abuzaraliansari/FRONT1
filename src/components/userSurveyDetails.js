@@ -1,35 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import '../App.css';
-import { Header, Footer } from './HeaderFooter';
-import Navbar from './navbar';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import "../App.css";
+import { Header, Footer } from "./HeaderFooter";
+import Navbar from "./navbar";
 
 const UsersList = () => {
   const [users, setUsers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5); // Default limit
   const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
 
   const fetchUsers = useCallback(
-    async (pageNum, reset = false, query = '', currentUsers = [], fetchLimit = limit) => {
+    async (
+      pageNum,
+      reset = false,
+      query = "",
+      currentUsers = [],
+      fetchLimit = limit
+    ) => {
       setLoading(true);
-      setError('');
+      setError("");
 
       try {
         const isMobileSearch = /^\d+$/.test(query);
         const response = await axios.post(
-          'https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getAllUsersWithRoleslimit',
+          "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getAllUsersWithRoleslimit",
           {
             mobileNumber: isMobileSearch ? query : null,
             limit: fetchLimit * pageNum,
           },
           {
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
           }
         );
 
@@ -48,18 +54,21 @@ const UsersList = () => {
           if (reset) {
             setUsers(fetchedUsers);
           } else {
-            const newUsers = [...currentUsers, ...fetchedUsers.slice(currentUsers.length)];
+            const newUsers = [
+              ...currentUsers,
+              ...fetchedUsers.slice(currentUsers.length),
+            ];
             newUsers.sort((a, b) => a.username.localeCompare(b.username));
             setUsers(newUsers);
           }
 
           setHasMore(fetchedUsers.length === fetchLimit * pageNum);
         } else {
-          setError(response.data.message || 'No users found');
+          setError(response.data.message || "No users found");
           setHasMore(false);
         }
       } catch (err) {
-        setError('Failed to fetch users. Please try again.');
+        setError("Failed to fetch users. Please try again.");
         setHasMore(false);
       } finally {
         setLoading(false);
@@ -69,7 +78,7 @@ const UsersList = () => {
   );
 
   useEffect(() => {
-    fetchUsers(1, true, '', []);
+    fetchUsers(1, true, "", []);
   }, [fetchUsers]);
 
   const handleSearch = (e) => {
@@ -99,7 +108,7 @@ const UsersList = () => {
   };
 
   const handleEdit = (mobileNumber) => {
-    navigate('/SurveyData', {
+    navigate("/SurveyData", {
       state: { mobileNumber },
     });
   };
@@ -123,7 +132,7 @@ const UsersList = () => {
               disabled={loading}
             />
             <button type="submit" className="search-button" disabled={loading}>
-              {loading ? 'Searching...' : 'Search'}
+              {loading ? "Searching..." : "Search"}
             </button>
           </form>
         </div>
@@ -153,13 +162,15 @@ const UsersList = () => {
                   <tr key={user.userID}>
                     <td>{user.username}</td>
                     <td>
-                      {`${(user.FirstName || '').trim()} ${(user.MiddleName || '').trim()} ${(user.LastName || '').trim()}`.trim()}
+                      {`${(user.firstName || "").trim()} ${(
+                        user.middleName || ""
+                      ).trim()} ${(user.lastName || "").trim()}`.trim()}
                     </td>
                     <td>{user.mobileNumber}</td>
-                    <td>{user.emailID || 'N/A'}</td>
-                    <td>{user.roles.join(', ') || 'No roles'}</td>
-                    <td>{user.isAdmin ? 'Yes' : 'No'}</td>
-                    <td>{user.isActive ? 'Yes' : 'No'}</td>
+                    <td>{user.emailID || "N/A"}</td>
+                    <td>{user.roles.join(", ") || "No roles"}</td>
+                    <td>{user.isAdmin ? "Yes" : "No"}</td>
+                    <td>{user.isActive ? "Yes" : "No"}</td>
                     <td>
                       <button
                         className="edit-button"
@@ -202,22 +213,22 @@ const UsersList = () => {
         </div>
 
         <div className="set-limit">
-  {/* Label for Set Limit */}
-  <label className="set-limit-label">Set Limit:</label>
-  
-  {/* Limit Dropdown */}
-  <select
-    value={limit}
-    onChange={(e) => handleLimitChange(parseInt(e.target.value))}
-    className="limit-dropdown"
-  >
-    {[3, 5, 10, 15, 20, 100].map((value) => (
-      <option key={value} value={value}>
-        {value}
-      </option>
-    ))}
-  </select>
-</div>
+          {/* Label for Set Limit */}
+          <label className="set-limit-label">Set Limit:</label>
+
+          {/* Limit Dropdown */}
+          <select
+            value={limit}
+            onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+            className="limit-dropdown"
+          >
+            {[3, 5, 10, 15, 20, 100].map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <Footer />
     </div>
