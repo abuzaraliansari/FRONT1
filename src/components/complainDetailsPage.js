@@ -186,21 +186,7 @@ const ComplainDetailsPage = () => {
               Reply
             </button>
 
-            <button
-              className="action-btn close-btn"
-              onClick={handleCloseComplaint}
-              disabled={complaint.ComplaintsStatus === "Closed"}
-            >
-              Close Complaint
-            </button>
-
-            <button
-              className="action-btn open-btn"
-              onClick={handleOpenComplaint}
-              disabled={complaint.ComplaintsStatus === "Open"}
-            >
-              Open Complaint
-            </button>
+            
 
             <button
               className="action-btn back-btn"

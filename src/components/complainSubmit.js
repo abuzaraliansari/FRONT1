@@ -216,7 +216,34 @@ const ComplainSubmit = () => {
           </div>
         )}
 
+
+        <div className="search-section1">
+        <div className="search-form1">
+  <label htmlFor="searchInput">Search by Mobile Number   </label>
+  <input
+    type="text"
+    id="searchInput"
+    value={formData.searchMobile || ""}
+    onChange={(e) => {
+      const mobileNumber = e.target.value;
+      setFormData((prevData) => ({ ...prevData, searchMobile: mobileNumber }));
+
+      // Trigger fetchUserData when the mobile number is 10 digits
+      if (mobileNumber.length === 10) {
+        fetchUserData(mobileNumber);
+      }
+    }}
+    placeholder="Enter Mobile Number"
+    className="search-input"
+  />
+</div>
+        </div>
+        
         <div className="submit-row grouped-fields">
+
+        
+
+
           {isAdmin && (
             <>
               <div className="submit-group">
@@ -309,10 +336,8 @@ const ComplainSubmit = () => {
               <option value="other">Other</option>
             </select>
           </div>
-        </div>
 
-        <div className="submit-row upload-description">
-          <div className="upload-fields">
+          
             <div className="submit-group">
               <label>Upload Document</label>
               <input
@@ -333,7 +358,11 @@ const ComplainSubmit = () => {
                 className="submit-file"
               />
             </div>
-          </div>
+          
+        </div>
+
+        <div className="submit-row upload-description">
+          
           <div className="description-box">
             <label>Description</label>
             <textarea

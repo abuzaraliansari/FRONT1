@@ -216,7 +216,7 @@ const ComplainDetails = () => {
             </div>
           )}
           <div>
-            <label className="text-label">
+            <label className="search-placement">
               <button
                 className="search-button"
                 onClick={handleSearch}

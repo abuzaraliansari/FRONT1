@@ -144,7 +144,9 @@ const ReplyPage = () => {
 
       const data = await response.json();
       if (data.success === false) {
-        throw new Error(data.message || `Failed to ${status.toLowerCase()} complaint`);
+        throw new Error(
+          data.message || `Failed to ${status.toLowerCase()} complaint`
+        );
       }
 
       setCurrentStatus(status); // Update the current status
@@ -171,7 +173,9 @@ const ReplyPage = () => {
             replies.map((reply, index) => (
               <div
                 key={index}
-                className={`reply-card ${reply.IsAdmin ? "admin-reply" : "user-reply"}`}
+                className={`reply-card ${
+                  reply.IsAdmin ? "admin-reply" : "user-reply"
+                }`}
               >
                 <p className="reply-text">{reply.ReplyDescription}</p>
                 <p className="reply-meta">
@@ -195,22 +199,22 @@ const ReplyPage = () => {
             <button className="reply-button" onClick={handleReplySubmit}>
               Submit Reply
             </button>
-            {isAdmin && currentStatus === "Open" && (
-              <button
-                className="close-button"
-                onClick={() => handleUpdateStatus("Closed")}
-              >
-                Close Complaint
-              </button>
-            )}
-            {isAdmin && currentStatus === "Closed" && (
-              <button
-                className="reopen-button"
-                onClick={() => handleUpdateStatus("Open")}
-              >
-                Reopen Complaint
-              </button>
-            )}
+            {authData?.user?.roles?.includes("Admin") && currentStatus === "Open" && (
+    <button
+      className="close-button"
+      onClick={() => handleUpdateStatus("Closed")}
+    >
+      Close Complaint
+    </button>
+  )}
+  {authData?.user?.roles?.includes("Admin") && currentStatus === "Closed" && (
+    <button
+      className="reopen-button"
+      onClick={() => handleUpdateStatus("Open")}
+    >
+      Reopen Complaint
+    </button>
+  )}
             <button className="back-button" onClick={() => navigate(-1)}>
               Back
             </button>
