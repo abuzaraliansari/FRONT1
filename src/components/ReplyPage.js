@@ -10,7 +10,6 @@ const ReplyPage = () => {
   const location = useLocation();
   const { complaintID, complaintStatus } = location.state || {}; // Use complaintID and complaintStatus from navigation state
   const { authData } = useContext(AuthContext);
-  const isAdmin = authData?.user?.roles?.includes("Admin") || false; // Check if the user is an admin
   const [replies, setReplies] = useState([]);
   const [replyDescription, setReplyDescription] = useState("");
   const [ipAddress, setIpAddress] = useState("");
@@ -83,7 +82,6 @@ const ReplyPage = () => {
           body: JSON.stringify({
             complaintno: complaintID,
             replyDescription,
-            isAdmin,
             ipAddress,
             userDetails: {
               username: authData.user.username,
@@ -113,23 +111,21 @@ const ReplyPage = () => {
     }
   };
 
-  const handleUpdateStatus = async (status) => {
+  const handleCloseComplaint = async () => {
     try {
-      console.log("Received complaintno:", complaintID);
-      console.log("Received status:", status);
-      console.log("Received modifiedBy:", authData.user.username);
+      console.log("Closing complaint:", complaintID);
 
       const response = await fetch(
         "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/complaintsstatus",
         {
-          method: "POST", // Use POST as per the provided API
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authData.token}`,
           },
           body: JSON.stringify({
             complaintno: complaintID,
-            status,
+            status: "Closed",
             modifiedBy: authData.user.username,
           }),
         }
@@ -144,16 +140,15 @@ const ReplyPage = () => {
 
       const data = await response.json();
       if (data.success === false) {
-        throw new Error(
-          data.message || `Failed to ${status.toLowerCase()} complaint`
-        );
+        throw new Error(data.message || "Failed to close complaint");
       }
 
-      setCurrentStatus(status); // Update the current status
-      alert(`Complaint ${status.toLowerCase()} successfully`);
+      setCurrentStatus("Closed"); // Update the current status
+      alert("Complaint closed successfully");
+      navigate(-1); // Automatically navigate back one page
     } catch (error) {
-      console.error(`Error updating complaint status to ${status}:`, error);
-      alert(`Failed to ${status.toLowerCase()} complaint: ${error.message}`);
+      console.error("Error closing complaint:", error);
+      alert(`Failed to close complaint: ${error.message}`);
     }
   };
 
@@ -168,6 +163,9 @@ const ReplyPage = () => {
       <Navbar />
       <div className="reply-page-container">
         <h2>Complaint Replies</h2>
+        <p>
+          <strong>Complaint Status:</strong> {currentStatus || "N/A"} {/* Display the current status */}
+        </p>
         <div className="replies-container">
           {replies.length > 0 ? (
             replies.map((reply, index) => (
@@ -199,22 +197,14 @@ const ReplyPage = () => {
             <button className="reply-button" onClick={handleReplySubmit}>
               Submit Reply
             </button>
-            {authData?.user?.roles?.includes("Admin") && currentStatus === "Open" && (
-    <button
-      className="close-button"
-      onClick={() => handleUpdateStatus("Closed")}
-    >
-      Close Complaint
-    </button>
-  )}
-  {authData?.user?.roles?.includes("Admin") && currentStatus === "Closed" && (
-    <button
-      className="reopen-button"
-      onClick={() => handleUpdateStatus("Open")}
-    >
-      Reopen Complaint
-    </button>
-  )}
+            {currentStatus === "Open" && (
+              <button
+                className="close-button"
+                onClick={handleCloseComplaint}
+              >
+                Close Complaint
+              </button>
+            )}
             <button className="back-button" onClick={() => navigate(-1)}>
               Back
             </button>

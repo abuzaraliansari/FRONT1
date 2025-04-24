@@ -61,22 +61,22 @@ const SurveyData = () => {
 
   const toggleActiveStatus = async () => {
     const newStatus = !data.owner.UserIsActive;
-
+  
     const confirmChange = window.confirm(
       `Are you sure you want to change the status to ${newStatus ? 'Active' : 'Inactive'}?`
     );
-
+  
     if (!confirmChange) {
       return;
     }
-
+  
     try {
       const response = await axios.post('https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/updateUserStatus', {
         mobileNo: data.owner.MobileNumber,
         isActive: newStatus,
         modifiedBy: authData?.user?.username,
       });
-
+  
       if (response.data.success) {
         setData((prevData) => ({
           ...prevData,
@@ -87,6 +87,7 @@ const SurveyData = () => {
           },
         }));
         alert('Status updated successfully.');
+        window.history.back(); // Navigate back to the previous page
       } else {
         alert('Failed to update status.');
       }

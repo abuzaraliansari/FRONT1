@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Header, Footer } from "./HeaderFooter";
@@ -11,6 +11,8 @@ const ComplainDetailsPage = () => {
   const navigate = useNavigate();
   const complaint = location.state;
   const { authData } = useContext(AuthContext);
+  const [reason, setReason] = useState("");
+  const [complaintStatus, setComplaintStatus] = useState(complaint.ComplaintsStatus); // State for live status update
 
   const API_URL = "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net";
 
@@ -24,77 +26,67 @@ const ComplainDetailsPage = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const updateComplaintStatus = async () => {
-    const data = {
-      complaintno: complaint.ComplaintID,
-      status: "Closed",
-      modifiedBy: authData.user.username,
-    };
-
-    console.log("API URL:", `${API_URL}/auth/updateComplaintStatus`);
-    console.log("Request Body for Closing Complaint:", data);
-
-    try {
-      const response = await axios.post(`${API_URL}/auth/updateComplaintStatus`, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.token}`,
-        },
-      });
-      console.log("Response for Closing Complaint:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating complaint status:", error);
-      if (error.response) {
-        console.error("Response Data:", error.response.data);
-        console.error("Response Status:", error.response.status);
-      }
-      alert("Failed to close the complaint. Please try again.");
-    }
-  };
-
-  const updateComplaintStatusOpen = async () => {
-    const data = {
-      complaintno: complaint.ComplaintID,
-      status: "Open",
-      modifiedBy: authData.user.username,
-    };
-
-    console.log("Request Body for Opening Complaint:", data);
-
-    try {
-      const response = await axios.post(`${API_URL}/auth/updateComplaintStatusOpen`, data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authData.token}`,
-        },
-      });
-      console.log("Response for Opening Complaint:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating complaint status to open:", error);
-      if (error.response) {
-        console.error("Response Data:", error.response.data);
-        console.error("Response Status:", error.response.status);
-      }
-      alert("Failed to open the complaint. Please try again.");
-    }
-  };
-
-  const handleCloseComplaint = async () => {
-    const result = await updateComplaintStatus();
-    if (result?.success) {
-      alert("Complaint closed successfully.");
-      navigate(0);
-    }
-  };
-
   const handleOpenComplaint = async () => {
-    const result = await updateComplaintStatusOpen();
-    if (result?.success) {
-      alert("Complaint opened successfully.");
-      navigate(0);
+    const reasonInput = prompt("Please provide a reason for opening the complaint:");
+    if (!reasonInput || reasonInput.trim() === "") {
+      alert("Reason is required to open the complaint.");
+      return;
     }
+  
+    try {
+      console.log("Submitting reason for opening the complaint...");
+  
+      // Submit the reason to the API
+      const replyResponse = await axios.post(`${API_URL}/auth/submitReplyComment`, {
+        complaintID: complaint.ComplaintID,
+        commentDescription: reasonInput,
+        status: "Open",
+        createdBy: `${authData.user.firstName} ${authData.user.username}`,
+        modifiedBy: `${authData.user.firstName} ${authData.user.username}`,
+        isAdmin: authData.user.roles.includes("Admin") ? 1 : 0,
+      });
+  
+      if (!replyResponse.data.success) {
+        alert("Failed to submit the reason for opening the complaint.");
+        return;
+      }
+  
+      console.log("Updating complaint status to 'Open'...");
+  
+      // Update the complaint status to "Open"
+      const statusResponse = await axios.post(`${API_URL}/auth/complaintsstatusopen`, {
+        complaintno: complaint.ComplaintID,
+        status: "Open",
+        modifiedBy: authData.user.username,
+      });
+  
+      if (statusResponse.data.success) {
+        alert("Complaint opened successfully.");
+        setComplaintStatus("Open"); // Update the status in the UI
+  
+        // Navigate to the ReplyPage
+        navigate(`/ReplyPage`, {
+          state: { 
+            complaintID: complaint.ComplaintID,
+            complaintStatus: "Open", // Pass the updated status
+          },
+        });
+      } else {
+        alert("Failed to open the complaint.");
+      }
+    } catch (error) {
+      console.error("Error opening complaint:", error);
+      alert("An error occurred while opening the complaint.");
+    }
+  };
+
+  const handleReplyNavigation = () => {
+    navigate(`/ReplyPage`, {
+      state: { 
+        complaintID: complaint.ComplaintID,
+        complaintStatus: complaintStatus // Pass the live complaint status
+      },
+    });
   };
 
   return (
@@ -110,19 +102,16 @@ const ComplainDetailsPage = () => {
               <strong>Complaint ID:</strong> {complaint.ComplaintID || "N/A"}
             </p>
             <p>
-              <strong>Registration No:</strong>{" "}
-              {complaint.ComplaintRegistrationNo || "N/A"}
+              <strong>Registration No:</strong> {complaint.ComplaintRegistrationNo || "N/A"}
             </p>
             <p>
               <strong>User ID:</strong> {complaint.UserID || "N/A"}
             </p>
             <p>
-              <strong>Complaint Type:</strong>{" "}
-              {complaint.ComplaintsType || "N/A"}
+              <strong>Complaint Type:</strong> {complaint.ComplaintsType || "N/A"}
             </p>
             <p>
-              <strong>Complaint Status:</strong>{" "}
-              {complaint.ComplaintsStatus || "N/A"}
+              <strong>Complaint Status:</strong> {complaintStatus || "N/A"} {/* Live status */}
             </p>
             <p>
               <strong>Mobile No:</strong> {complaint.MobileNo || "N/A"}
@@ -146,52 +135,20 @@ const ComplainDetailsPage = () => {
               <strong>Created By:</strong> {complaint.CreatedBy || "N/A"}
             </p>
             <p>
-              <strong>Created Date:</strong>{" "}
-              {formatDate(complaint.CreatedDate) || "N/A"}
+              <strong>Created Date:</strong> {formatDate(complaint.CreatedDate) || "N/A"}
             </p>
-
-            {complaint.document && (
-              <p>
-                <strong>Document:</strong>{" "}
-                <a
-                  href={complaint.document}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="doc-link"
-                >
-                  Download Document
-                </a>
-              </p>
-            )}
-
-            {complaint.photo && (
-              <>
-                <p>
-                  <strong>Photo:</strong>
-                </p>
-                <img src={complaint.photo} alt="Complaint" className="photo" />
-              </>
-            )}
           </div>
 
           <div className="action-buttons">
-            <button
-              className="action-btn reply-btn"
-              onClick={() =>
-                navigate(`/ReplyPage`, {
-                  state: { complaintID: complaint.ComplaintID },
-                })
-              }
-            >
+          <button className="action-btn reply-btn" onClick={handleReplyNavigation}>
               Reply
             </button>
-
-            
-
-            <button
-              className="action-btn back-btn"
-              onClick={() => navigate(-1)}
-            >
+            {complaintStatus === "Closed" && (
+              <button className="action-btn open-btn" onClick={handleOpenComplaint}>
+                Open Complaint
+              </button>
+            )}
+            <button className="action-btn back-btn" onClick={() => navigate(-1)}>
               Back
             </button>
           </div>

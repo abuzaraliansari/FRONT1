@@ -8,6 +8,8 @@ import Navbar from "./navbar";
 const UsersList = () => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchRole, setSearchRole] = useState(""); // New state for role search
+  const [searchActive, setSearchActive] = useState(""); // New state for active status search
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -20,6 +22,8 @@ const UsersList = () => {
       pageNum,
       reset = false,
       query = "",
+      role = "",
+      active = "",
       currentUsers = [],
       fetchLimit = limit
     ) => {
@@ -32,6 +36,8 @@ const UsersList = () => {
           "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getAllUsersWithRoleslimit",
           {
             mobileNumber: isMobileSearch ? query : null,
+            role: role || null,
+            isActive: active !== "" ? active === "true" : null,
             limit: fetchLimit * pageNum,
           },
           {
@@ -46,6 +52,19 @@ const UsersList = () => {
             const lowerQuery = query.toLowerCase();
             fetchedUsers = fetchedUsers.filter((user) =>
               user.username?.toLowerCase().includes(lowerQuery)
+            );
+          }
+
+          if (role) {
+            fetchedUsers = fetchedUsers.filter((user) =>
+              user.roles.includes(role)
+            );
+          }
+
+          if (active !== "") {
+            const isActive = active === "true";
+            fetchedUsers = fetchedUsers.filter(
+              (user) => user.isActive === isActive
             );
           }
 
@@ -78,33 +97,33 @@ const UsersList = () => {
   );
 
   useEffect(() => {
-    fetchUsers(1, true, "", []);
+    fetchUsers(1, true, "", "", "", []);
   }, [fetchUsers]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchUsers(1, true, searchQuery, []);
+    fetchUsers(1, true, searchQuery, searchRole, searchActive, []);
   };
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchUsers(nextPage, false, searchQuery, users, limit);
-  };
-
-  const handlePreviousPage = () => {
-    if (page > 1) {
-      const previousPage = page - 1;
-      setPage(previousPage);
-      fetchUsers(previousPage, true, searchQuery, [], limit);
-    }
+    fetchUsers(
+      nextPage,
+      false,
+      searchQuery,
+      searchRole,
+      searchActive,
+      users,
+      limit
+    );
   };
 
   const handleLimitChange = (newLimit) => {
     setLimit(newLimit); // Update the limit
     setPage(1); // Reset to the first page
-    fetchUsers(1, true, searchQuery, [], newLimit); // Fetch users with the new limit
+    fetchUsers(1, true, searchQuery, searchRole, searchActive, [], newLimit); // Fetch users with the new limit
   };
 
   const handleEdit = (mobileNumber) => {
@@ -131,6 +150,34 @@ const UsersList = () => {
               className="search-input"
               disabled={loading}
             />
+            <label htmlFor="role-select" className="search-label">
+              Search by Role:
+            </label>
+            <select
+              id="role-select"
+              value={searchRole}
+              onChange={(e) => setSearchRole(e.target.value)}
+              className="search-select"
+              disabled={loading}
+            >
+              <option value="">All</option>
+              <option value="Admin">Admin</option>
+              <option value="User">User</option>
+            </select>
+            <label htmlFor="active-select" className="search-label">
+              Search by Active Status:
+            </label>
+            <select
+              id="active-select"
+              value={searchActive}
+              onChange={(e) => setSearchActive(e.target.value)}
+              className="search-select"
+              disabled={loading}
+            >
+              <option value="">All</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
             <button type="submit" className="search-button" disabled={loading}>
               {loading ? "Searching..." : "Search"}
             </button>
@@ -193,14 +240,6 @@ const UsersList = () => {
 
         {/* Pagination Controls */}
         <div className="pagination-buttons">
-          {/* <button
-            className="previous-button"
-            onClick={handlePreviousPage}
-            disabled={loading || page === 1}
-          >
-            Previous Page
-          </button> */}
-
           {!loading && hasMore && (
             <button
               className="more-button"
@@ -213,10 +252,7 @@ const UsersList = () => {
         </div>
 
         <div className="set-limit">
-          {/* Label for Set Limit */}
           <label className="set-limit-label">Set Limit:</label>
-
-          {/* Limit Dropdown */}
           <select
             value={limit}
             onChange={(e) => handleLimitChange(parseInt(e.target.value))}

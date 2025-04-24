@@ -338,7 +338,28 @@ const ComplainSubmit = () => {
           </div>
 
           
-            <div className="submit-group">
+            
+          
+        </div>
+
+        <div className="submit-row upload-description">
+          
+          <div className="description-box">
+            <label>Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleDescriptionChange}
+              placeholder="Enter your complaint description"
+              required
+              className="submit-textarea"
+              rows="10"
+            />
+          </div>
+        </div>
+
+        <div className="submit-row grouped-fields">
+        <div className="submit-group">
               <label>Upload Document</label>
               <input
                 type="file"
@@ -358,23 +379,6 @@ const ComplainSubmit = () => {
                 className="submit-file"
               />
             </div>
-          
-        </div>
-
-        <div className="submit-row upload-description">
-          
-          <div className="description-box">
-            <label>Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleDescriptionChange}
-              placeholder="Enter your complaint description"
-              required
-              className="submit-textarea"
-              rows="10"
-            />
-          </div>
         </div>
 
         <button type="submit" className="submit-btn" disabled={loading}>
