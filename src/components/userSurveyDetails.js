@@ -8,37 +8,29 @@ import Navbar from "./navbar";
 const UsersList = () => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchRole, setSearchRole] = useState(""); // New state for role search
-  const [searchActive, setSearchActive] = useState(""); // New state for active status search
+  const [searchRole, setSearchRole] = useState("");
+  const [searchActive, setSearchActive] = useState(""); // Empty string means no filter
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5); // Default limit
-  const [hasMore, setHasMore] = useState(true);
+  const [limit, setLimit] = useState(2); // Default limit to 10
+  const [offset, setOffset] = useState(0); // Default offset to 0
   const navigate = useNavigate();
 
   const fetchUsers = useCallback(
-    async (
-      pageNum,
-      reset = false,
-      query = "",
-      role = "",
-      active = "",
-      currentUsers = [],
-      fetchLimit = limit
-    ) => {
+    async (reset = false) => {
       setLoading(true);
       setError("");
 
       try {
-        const isMobileSearch = /^\d+$/.test(query);
         const response = await axios.post(
           "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getAllUsersWithRoleslimit",
           {
-            mobileNumber: isMobileSearch ? query : null,
-            role: role || null,
-            isActive: active !== "" ? active === "true" : null,
-            limit: fetchLimit * pageNum,
+            mobileNumber: searchQuery || null,
+            username: null,
+            role: searchRole || null,
+            isActive: searchActive !== "" ? searchActive === "true" : null,
+            limit,
+            offset: reset ? 0 : offset,
           },
           {
             headers: { "Content-Type": "application/json" },
@@ -46,84 +38,83 @@ const UsersList = () => {
         );
 
         if (response.data.success) {
-          let fetchedUsers = response.data.users;
-
-          if (query && !isMobileSearch) {
-            const lowerQuery = query.toLowerCase();
-            fetchedUsers = fetchedUsers.filter((user) =>
-              user.username?.toLowerCase().includes(lowerQuery)
-            );
-          }
-
-          if (role) {
-            fetchedUsers = fetchedUsers.filter((user) =>
-              user.roles.includes(role)
-            );
-          }
-
-          if (active !== "") {
-            const isActive = active === "true";
-            fetchedUsers = fetchedUsers.filter(
-              (user) => user.isActive === isActive
-            );
-          }
-
-          fetchedUsers.sort((a, b) => a.username.localeCompare(b.username));
+          const fetchedUsers = response.data.users;
 
           if (reset) {
-            setUsers(fetchedUsers);
+            setUsers(fetchedUsers); // Reset the user list
+            setOffset(limit); // Reset the offset
           } else {
-            const newUsers = [
-              ...currentUsers,
-              ...fetchedUsers.slice(currentUsers.length),
-            ];
-            newUsers.sort((a, b) => a.username.localeCompare(b.username));
-            setUsers(newUsers);
+            setUsers((prevUsers) => [...prevUsers, ...fetchedUsers]); // Append new users
+            setOffset((prevOffset) => prevOffset + limit); // Increment the offset
           }
-
-          setHasMore(fetchedUsers.length === fetchLimit * pageNum);
         } else {
           setError(response.data.message || "No users found");
-          setHasMore(false);
         }
       } catch (err) {
         setError("Failed to fetch users. Please try again.");
-        setHasMore(false);
       } finally {
         setLoading(false);
       }
     },
-    [limit]
+    [searchQuery, searchRole, searchActive, limit, offset]
   );
 
+  // Separate API call for the initial load
   useEffect(() => {
-    fetchUsers(1, true, "", "", "", []);
-  }, [fetchUsers]);
+    const fetchInitialUsers = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await axios.post(
+          "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getAllUsersWithRoleslimit",
+          {
+            limit: 3,
+            offset: 0,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (response.data.success) {
+          setUsers(response.data.users); // Set the initial user list
+          setOffset(5); // Set the offset to match the initial limit
+        } else {
+          setError(response.data.message || "No users found");
+        }
+      } catch (err) {
+        setError("Failed to fetch users. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialUsers();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1);
-    fetchUsers(1, true, searchQuery, searchRole, searchActive, []);
+
+    // Ensure the mobile number is fully entered before making the API call
+    if (searchQuery && searchQuery.length < 10) {
+      setError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    setError(""); // Clear any previous error
+    fetchUsers(true); // Fetch users with filters and reset the data
   };
 
   const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchUsers(
-      nextPage,
-      false,
-      searchQuery,
-      searchRole,
-      searchActive,
-      users,
-      limit
-    );
+    const newLimit = limit + 3; // Increment the limit by 3
+    setLimit(newLimit);
+    fetchUsers(true); // Fetch users with the new limit and reset the data
   };
 
   const handleLimitChange = (newLimit) => {
-    setLimit(newLimit); // Update the limit
-    setPage(1); // Reset to the first page
-    fetchUsers(1, true, searchQuery, searchRole, searchActive, [], newLimit); // Fetch users with the new limit
+    setLimit(newLimit);
+    fetchUsers(true); // Fetch users with the new limit and reset the data
   };
 
   const handleEdit = (mobileNumber) => {
@@ -144,7 +135,7 @@ const UsersList = () => {
           <form onSubmit={handleSearch} className="search-form">
             <input
               type="text"
-              placeholder="Enter Mobile Number or Username"
+              placeholder="Enter Mobile Number"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -184,8 +175,7 @@ const UsersList = () => {
           </form>
         </div>
 
-        {/* Status */}
-        {loading && <div className="loading">Loading users...</div>}
+        {/* Error Message */}
         {error && <div className="error">{error}</div>}
 
         {/* Users Table */}
@@ -206,22 +196,20 @@ const UsersList = () => {
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.userID}>
-                    <td>{user.username}</td>
+                  <tr key={user.UserID}>
+                    <td>{user.Username}</td>
                     <td>
-                      {`${(user.firstName || "").trim()} ${(
-                        user.middleName || ""
-                      ).trim()} ${(user.lastName || "").trim()}`.trim()}
+                      {`${(user.FirstName || "").trim()} ${(user.MiddleName || "").trim()} ${(user.LastName || "").trim()}`.trim()}
                     </td>
-                    <td>{user.mobileNumber}</td>
-                    <td>{user.emailID || "N/A"}</td>
-                    <td>{user.roles.join(", ") || "No roles"}</td>
-                    <td>{user.isAdmin ? "Yes" : "No"}</td>
-                    <td>{user.isActive ? "Yes" : "No"}</td>
+                    <td>{user.MobileNo}</td>
+                    <td>{user.EmailID || "N/A"}</td>
+                    <td>{user.RoleName || "No roles"}</td>
+                    <td>{user.IsAdmin ? "Yes" : "No"}</td>
+                    <td>{user.IsActive ? "Yes" : "No"}</td>
                     <td>
                       <button
                         className="edit-button"
-                        onClick={() => handleEdit(user.mobileNumber)}
+                        onClick={() => handleEdit(user.MobileNo)}
                         disabled={loading}
                       >
                         Edit
@@ -240,7 +228,7 @@ const UsersList = () => {
 
         {/* Pagination Controls */}
         <div className="pagination-buttons">
-          {!loading && hasMore && (
+          {!loading && (
             <button
               className="more-button"
               onClick={handleLoadMore}
@@ -252,19 +240,50 @@ const UsersList = () => {
         </div>
 
         <div className="set-limit">
-          <label className="set-limit-label">Set Limit:</label>
-          <select
-            value={limit}
-            onChange={(e) => handleLimitChange(parseInt(e.target.value))}
-            className="limit-dropdown"
-          >
-            {[3, 5, 10, 15, 20, 100,200,400].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </div>
+  <label className="set-limit-label">Set Limit:</label>
+  <select
+    value={limit}
+    onChange={async (e) => {
+      const newLimit = parseInt(e.target.value);
+      setLimit(newLimit); // Update the limit state
+
+      // Call the API with the new limit to fetch data
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await axios.post(
+          "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getAllUsersWithRoleslimit",
+          {
+            limit: newLimit,
+            offset: 0, // Reset offset to 0 for new limit
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (response.data.success) {
+          setUsers(response.data.users); // Update the user list with the new data
+          setOffset(newLimit); // Update the offset to match the new limit
+        } else {
+          setError(response.data.message || "No users found");
+        }
+      } catch (err) {
+        setError("Failed to fetch users. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }}
+    className="limit-dropdown"
+  >
+    {[2, 3, 20, 50, 100].map((value) => (
+      <option key={value} value={value}>
+        {value}
+      </option>
+    ))}
+  </select>
+</div>
       </div>
       <Footer />
     </div>

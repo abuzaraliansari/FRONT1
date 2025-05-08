@@ -11,6 +11,8 @@ import LocationPage from './components/locationPage';
 import Payment from './components/payment';
 import UsersList from './components/userSurveyDetails';
 import SurveyData from './components/surveyData';
+import TaxCalculator from './components/taxcalculator';
+import TaxSurvey from './components/tax';
 
 
 const App = () => {
@@ -29,6 +31,8 @@ const App = () => {
           <Route path="/payment" element={<Payment />} />
           <Route path="/UserSurveyDetails" element={<UsersList />} />
           <Route path="/SurveyData" element={<SurveyData />} />
+          <Route path="/TaxCalculator" element={<TaxCalculator />} />
+          <Route path="/TaxSurvey" element={<TaxSurvey />} />
         </Routes>
       </Router>
     </AuthProvider>
