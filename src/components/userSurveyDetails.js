@@ -258,7 +258,7 @@ const UsersList = () => {
             onChange={(e) => handleLimitChange(parseInt(e.target.value))}
             className="limit-dropdown"
           >
-            {[3, 5, 10, 15, 20, 100].map((value) => (
+            {[3, 5, 10, 15, 20, 100,200,400].map((value) => (
               <option key={value} value={value}>
                 {value}
               </option>
