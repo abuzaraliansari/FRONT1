@@ -12,8 +12,9 @@ const Payment = () => {
   const [searchActive, setSearchActive] = useState(""); // Empty string means no filter
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [limit, setLimit] = useState(3); // Start with a default limit of 3
+  const [limit, setLimit] = useState(3); // Default limit to 3
   const [calculatingTax, setCalculatingTax] = useState(null); // Track which user's tax is being calculated
+  const [showTaxColumns, setShowTaxColumns] = useState(false); // Track visibility of tax columns
   const navigate = useNavigate();
 
   const fetchUsers = useCallback(
@@ -37,27 +38,14 @@ const Payment = () => {
         );
 
         if (response.data.success) {
-          const fetchedUsers = response.data.users.map((user) => {
-            // Calculate Pending Tax
-            const taxAmount = user.TaxAmount || 0;
-            const taxPaidAmount = user.TaxPaidAmount || 0;
-            const taxPending = user.TaxPending !== null ? user.TaxPending : taxAmount - taxPaidAmount;
-
-            // Calculate Late Fee (15% of Pending Tax)
-            const lateFee = (taxPending * 0.15).toFixed(2);
-
-            // Calculate Total Amount
-            const totalAmount = (taxPending + parseFloat(lateFee)).toFixed(2);
-
-            return {
-              ...user,
-              pendingTax: taxPending || 0,
-              discount: 100, // Default discount
-              lateFee: parseFloat(lateFee), // Late fee auto-calculated
-              totalAmount: parseFloat(totalAmount),
-              showPayTax: false, // Initially hide the Pay Tax button
-            };
-          });
+          const fetchedUsers = response.data.users.map((user) => ({
+            ...user,
+            pendingTax: "00", // Default value
+            discount: "00", // Default value
+            lateFee: "00", // Default value
+            totalAmount: "00", // Default value
+            showPayTax: false, // Initially hide the Pay Tax button
+          }));
 
           if (reset) {
             setUsers(fetchedUsers); // Reset the user list
@@ -67,7 +55,7 @@ const Payment = () => {
         } else {
           setError(response.data.message || "No users found");
         }
-      } catch (err) { 
+      } catch (err) {
         setError("Failed to fetch users. Please try again.");
       } finally {
         setLoading(false);
@@ -97,24 +85,132 @@ const Payment = () => {
     fetchUsers(true, newLimit); // Fetch users with the new limit and reset the data
   };
 
-  const handleCalculateTax = (userId) => {
+  const handleCalculateTax = async (userId) => {
     setCalculatingTax(userId); // Disable the action column for this user
-    setTimeout(() => {
+    setError(""); // Clear any previous error
+
+    try {
+      // Call the API to fetch tax details
+      const response = await axios.post(
+        "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getTaxSurveyByUserId", // Correct API URL
+        { userId },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (response.data.success) {
+        const taxData = response.data.taxSurveyData[0]; // Use the first record
+
+        // Calculate pendingTax, discount, and lateFee
+        const pendingTax = (taxData.TaxAmount || 0) - (taxData.TaxPaidAmount || 0) + (taxData.ReturnAmount || 0);
+        const discount = (pendingTax * 0.1).toFixed(2); // 10% of pendingTax
+        const lateFee = taxData.LateTaxFee || 0;
+
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.UserID === userId
+              ? {
+                ...user,
+                pendingTax: pendingTax.toFixed(2), // Format to 2 decimal places
+                discount: discount,
+                lateFee: lateFee.toFixed(2),
+                totalAmount: (pendingTax - discount + lateFee).toFixed(2), // Calculate total amount
+                showPayTax: true, // Show the Pay Tax button
+              }
+              : user
+          )
+        );
+        setShowTaxColumns(true); // Show the tax columns
+      } else {
+        // If no data is found, set all columns to "00"
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.UserID === userId
+              ? {
+                ...user,
+                pendingTax: "00",
+                discount: "00",
+                lateFee: "00",
+                totalAmount: "00",
+                showPayTax: false, // Do not show the Pay Tax button
+              }
+              : user
+          )
+        );
+        setError(response.data.message || "No tax survey data found.");
+      }
+    } catch (err) {
+      setError("Failed to fetch tax details. Please try again.");
+      console.error("Error fetching tax details:", err.message);
+
+      // Set all columns to "00" in case of an error
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.UserID === userId
-            ? { ...user, showPayTax: true } // Show the Pay Tax button
+            ? {
+              ...user,
+              pendingTax: "00",
+              discount: "00",
+              lateFee: "00",
+              totalAmount: "00",
+              showPayTax: false, // Do not show the Pay Tax button
+            }
             : user
         )
       );
+    } finally {
       setCalculatingTax(null); // Re-enable the action column
-    }, 2000); // Simulate tax calculation delay
+    }
   };
 
-  const handlePayTax = (user) => {
-    navigate("/TaxCalculator", {
-      state: { ...user }, // Send all user data to the parameters
-    });
+
+  const handlePayTax = async (user) => {
+    try {
+      // Fetch additional tax survey data for the user
+      const response = await axios.post(
+        "https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/getTaxSurveyByUserId",
+        { userId: user.UserID },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+  
+      if (response.data.success) {
+        const taxSurveyData = response.data.taxSurveyData;
+  
+        // Calculate total tax, pending tax, discount, and late fee
+        const totalTax = taxSurveyData.reduce((sum, item) => sum + (item.TaxAmount || 0), 0);
+        const pendingTax = taxSurveyData.reduce((sum, item) => sum + ((item.TaxAmount || 0) - (item.TaxPaidAmount || 0) + (item.ReturnAmount || 0)), 0);
+        const discount = (pendingTax * 0.1).toFixed(2); // 10% of pending tax
+        const lateFee = taxSurveyData.reduce((sum, item) => sum + (item.LateTaxFee || 0), 0);
+  
+        // Print both userData and taxSurveyData in the console
+        console.log("User Data:", user);
+        console.log("Tax Survey Data:", taxSurveyData);
+        console.log("Total Tax:", totalTax);
+        console.log("Pending Tax:", pendingTax);
+        console.log("Discount:", discount);
+        console.log("Late Fee:", lateFee);
+  
+        // Navigate to the next page with user and tax survey data
+        navigate("/TaxCalculator", {
+          state: {
+            userData: user, // Data from getAllUsersWithRoleslimit
+            taxSurveyData: taxSurveyData, // Data from getTaxSurveyByUserId
+            totalTax: totalTax.toFixed(2), // Total tax calculated
+            pendingTax: pendingTax.toFixed(2), // Total pending tax
+            discount: discount, // Discount
+            lateFee: lateFee.toFixed(2), // Late fee
+          },
+        });
+      } else {
+        setError(response.data.message || "Failed to fetch tax survey data.");
+      }
+    } catch (err) {
+      setError("Failed to fetch tax survey data. Please try again.");
+      console.error("Error fetching tax survey data:", err.message);
+    }
   };
 
   return (
@@ -182,9 +278,10 @@ const Payment = () => {
                   <th>Username</th>
                   <th>Full Name</th>
                   <th>Mobile Number</th>
-                  <th>Pending Tax</th>
-                  <th>Discount</th>
-                  <th>Late Fee</th>
+                  {showTaxColumns && <th>Pending Tax</th>}
+                  {showTaxColumns && <th>Discount</th>}
+                  {showTaxColumns && <th>Late Fee</th>}
+                  {showTaxColumns && <th>Total Amount</th>}
                   <th>Action</th>
                 </tr>
               </thead>
@@ -196,9 +293,10 @@ const Payment = () => {
                       {`${(user.FirstName || "").trim()} ${(user.MiddleName || "").trim()} ${(user.LastName || "").trim()}`.trim()}
                     </td>
                     <td>{user.MobileNo}</td>
-                    <td>{user.pendingTax}</td>
-                    <td>{user.discount}</td>
-                    <td>{user.lateFee}</td>
+                    {showTaxColumns && <td>{user.pendingTax}</td>}
+                    {showTaxColumns && <td>{user.discount}</td>}
+                    {showTaxColumns && <td>{user.lateFee}</td>}
+                    {showTaxColumns && <td>{user.totalAmount}</td>}
                     <td>
                       {!user.showPayTax ? (
                         <button
