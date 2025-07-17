@@ -13,6 +13,8 @@ import UsersList from './components/userSurveyDetails';
 import SurveyData from './components/surveyData';
 import TaxCalculator from './components/taxcalculator';
 import TaxSurvey from './components/tax';
+import OtpVerification from './components/otp';
+import EditData from './components/EditData';
 
 
 const App = () => {
@@ -33,6 +35,8 @@ const App = () => {
           <Route path="/SurveyData" element={<SurveyData />} />
           <Route path="/TaxCalculator" element={<TaxCalculator />} />
           <Route path="/TaxSurvey" element={<TaxSurvey />} />
+          <Route path="/OtpVerification" element={<OtpVerification />} />
+          <Route path="/EditData" element={<EditData />} />
         </Routes>
       </Router>
     </AuthProvider>

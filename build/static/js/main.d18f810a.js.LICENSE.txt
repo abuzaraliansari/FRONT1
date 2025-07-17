@@ -23,8 +23,6 @@
   PERFORMANCE OF THIS SOFTWARE.
   ***************************************************************************** */
 
-/*! sheetjs (C) 2013-present SheetJS -- http://sheetjs.com */
-
 /**
  * @license
   Copyright (c) 2008, Adobe Systems Incorporated

@@ -21,34 +21,43 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const data = {
-      username: formData.username,
-      password: formData.password,
-    };
-
-    fetch('https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/loginC', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          console.log('API Response:', data);
-          setAuthData(data); // Update authData with the API response
-          navigate('/Home'); // Navigate to Home after setting authData
-        } else {
-          setError(data.message);
-        }
-      })
-      .catch(() => {
-        setError('Login failed, please try again.');
-      });
+ const handleSubmit = (e) => {
+  e.preventDefault();
+  const data = {
+    username: formData.username,
+    password: formData.password,
   };
+
+  fetch('https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/loginC', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+    .then(response => response.json())
+    .then(async (data) => {
+      if (data.success) {
+        setAuthData(data);
+        // Call OTP API with mobile number from login response
+        const mobileNumber = data.user?.MobileNumber || formData.username;
+        const otpResponse = await fetch('https://babralaapi-d3fpaphrckejgdd5.centralindia-01.azurewebsites.net/auth/sendSms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobileNumber }),
+        });
+        const otpData = await otpResponse.json();
+        if (otpData.success) {
+         navigate('/OtpVerification', { state: { userDetails: { mobileNumber } } });
+        } else {
+          setError('Failed to send OTP');
+        }
+      } else {
+        setError(data.message);
+      }
+    })
+    .catch(() => {
+      setError('Login failed, please try again.');
+    });
+};
 
   return (
     <div>

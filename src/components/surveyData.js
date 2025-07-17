@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { Header, Footer } from './HeaderFooter';
 import Navbar from './navbar';
@@ -19,6 +20,7 @@ const SurveyData = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
+   const navigate = useNavigate();
 
   const handleSearch = useCallback(async (mobile = mobileNumber) => {
     if (!mobile) {
@@ -192,7 +194,7 @@ const SurveyData = () => {
                     </tr>
                     <tr>
                       <td className="survey-data-table-header">Modified By</td>
-                      <td className="survey-data-table-cell">{data.owner.UserModifiedBy || 'N/A'}</td>
+                      <td className="survey-data-table-cell">{data.owner.ModifiedBy || 'N/A'}</td>
                     </tr>
                     <tr>
                       <td className="survey-data-table-header">Active Status</td>
@@ -219,6 +221,13 @@ const SurveyData = () => {
           )}
         </div>
         <div className="survey-data-column">
+          <button
+                className="survey-data-back-button"
+                onClick={() => navigate('/EditData', { state: { data } })}
+                style={{ marginRight: '5px', background: '#007bff', color: '#fff',}}
+              >
+                Edit Data
+              </button>
         <button className="survey-data-back-button" onClick={() => window.history.back()}>
         Back
       </button>

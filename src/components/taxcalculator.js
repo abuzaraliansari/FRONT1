@@ -69,8 +69,8 @@ const TaxCalculator = () => {
     <div className="invoice-container">
       <div className="invoice-box" ref={invoiceRef}>
         <header className="invoice-header">
-          <h1>GOLF HOMES & KINGSWOOD</h1>
-          <p>GH-2, Sector-04, Greater Noida (West), 201301</p>
+          <h1>Nagar Panchayat Babrala</h1>
+          <p>District Sambhal</p>
           <h2>PROPERTY TAX INVOICE</h2>
         </header>
 
@@ -147,7 +147,7 @@ const TaxCalculator = () => {
           ) : (
             <div className="export-buttons">
               <button onClick={exportToPDF}>Export to PDF</button>
-              <button onClick={exportToExcel}>Export to Excel</button>
+              {/* <button onClick={exportToExcel}>Export to Excel</button> */}
             </div>
           )}
         </footer>
