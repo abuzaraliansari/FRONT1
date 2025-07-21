@@ -312,7 +312,10 @@ const renderTwoColumnTable = (fields, data, editMode = false, onChange = () => {
                 ? maskAadhaarNumber(data[key])
                 : key === 'DateModified'
                   ? formatDateDMY(data[key])
-                  : data[key] ?? 'N/A'
+                  : key === 'HouseNumber' && context === 'property'
+  ? `${data.ZoneName || ''}/${data.LocalityName || ''}/Galli ${data.GalliNumber || ''}/H.No ${data.HouseNumber || ''}`.trim()
+  : data[key] ?? 'N/A'
+
             )}
           </td>
         </tr>
@@ -392,9 +395,13 @@ const propertyFieldsLeft = [
   ['Shop Count', 'ShopCount'],
   ['Shop Area', 'ShopArea'],
   ['Tenant Yearly Rent', 'TenantYearlyRent'],
+    ['Zone Name', 'ZoneName'],
+  ['Locality Name', 'LocalityName'],
   
 ];
 const propertyFieldsRight = [
+   ['Colony Name', 'Colony'],
+  ['Galli Number', 'GalliNumber'],
   ['House Number', 'HouseNumber'],
   ['House Type', 'HouseType'],
   ['Open Area', 'OpenArea'],
